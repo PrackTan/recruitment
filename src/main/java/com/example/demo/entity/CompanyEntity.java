@@ -9,6 +9,8 @@ import lombok.experimental.FieldDefaults;
 import org.apache.catalina.security.SecurityUtil;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 
 @Setter
@@ -39,7 +41,10 @@ public class CompanyEntity {
     String createBy;
     @Column(name = "updatedBy")
     String updatedBy;
-
+    @OneToMany (mappedBy = "companyEntity")
+    Set<UserEntity> userList;
+    @OneToMany(mappedBy= "companyEntity")
+    Set<JobEntity> jobsList;
     @PrePersist
     public void handleBeforeCreate(){
         this.createBy = SercurityUtil.getCurrentUserLogin().isPresent() == true ? SercurityUtil.getCurrentUserLogin().get():"";

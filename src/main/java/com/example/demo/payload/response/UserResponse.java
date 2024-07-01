@@ -1,6 +1,7 @@
 package com.example.demo.payload.response;
 
 import com.example.demo.EnumClass.GenderEnum;
+import com.example.demo.entity.CompanyEntity;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -21,4 +22,12 @@ public class UserResponse {
     private GenderEnum gender;
     private String address;
     private int age;
+    private CompanyEntity companyEntity;
+
+    @Getter
+    @Setter
+    public static class CompanyUser{
+        private long id;
+        private String name;
+    }
 }

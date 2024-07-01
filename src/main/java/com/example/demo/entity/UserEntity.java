@@ -51,6 +51,9 @@ public class UserEntity {
     @ManyToOne
     @JoinColumn(name = "idRole")
     private RoleEntity role;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private CompanyEntity companyEntity;
     @PrePersist
     public void handleBeforeCreate(){
         this.createBy = SercurityUtil.getCurrentUserLogin().isPresent() == true ? SercurityUtil.getCurrentUserLogin().get():"";

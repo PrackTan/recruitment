@@ -1,6 +1,7 @@
 package com.example.demo.payload.request;
 
 import com.example.demo.EnumClass.GenderEnum;
+import com.example.demo.entity.CompanyEntity;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -24,4 +25,5 @@ public class UserRequest {
     private GenderEnum gender;
     private String address;
     private int age;
+    private long companyId;
 }

@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.Exception.UsernameExistance;
+import com.example.demo.entity.CompanyEntity;
 import com.example.demo.entity.UserEntity;
 import com.example.demo.payload.request.UserRequest;
 import com.example.demo.payload.response.UserResponse;
@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -23,10 +24,11 @@ public class UserService implements UserServiceImp {
     /// sử dụng thường
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final CompanyService companyService;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, CompanyService companyService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.companyService = companyService;
     }
 
     @Override
@@ -38,14 +40,17 @@ public class UserService implements UserServiceImp {
                 .firstName(item.getFirstName())
                 .lastName(item.getLastName())
                 .phone(item.getPhone())
+                .companyEntity(CompanyEntity.builder()
+                        .id(item.getCompanyEntity().getId())
+                        .name(item.getCompanyEntity().getName())
+                        .build())
                 .build()).toList();
 
     }
 
     @Override
     public UserEntity getUserByUsername(String username) {
-        UserEntity userEntity =  userRepository.findByUserName(username);
-        return userEntity;
+        return userRepository.findByUserName(username);
     }
 
     @Override
@@ -58,6 +63,9 @@ public class UserService implements UserServiceImp {
                         .gender(userRequest.getGender())
                         .address(userRequest.getAddress())
                         .age(userRequest.getAge())
+                        .companyEntity(CompanyEntity.builder()
+                                 .id(userRequest.getCompanyId())
+                                 .build())
                         .build());
 
     }
@@ -73,18 +81,22 @@ public class UserService implements UserServiceImp {
 
     @Override
     public UserEntity updateUser(UserRequest userRequest) {
-        UserEntity user = userRepository.findById(userRequest.getId());
-        UserEntity userResponse = new UserEntity();
-        if(user != null){
-            user.setId(userRequest.getId());
-            user.setFirstName(userRequest.getFirstName());
-            user.setAge(userRequest.getAge());
-            user.setGender(userRequest.getGender());
-            user.setAddress(userRequest.getAddress());
-            user.setPhone(userRequest.getPhone());
-            user.setLastName(userRequest.getLastName());
-            user.setFullName(userRequest.getFullName());
-            return userRepository.save(user);
+        UserEntity userEntity = userRepository.findById(userRequest.getId());
+        if(userEntity != null){
+            userEntity.setId(userRequest.getId());
+            userEntity.setFirstName(userRequest.getFirstName());
+            userEntity.setAge(userRequest.getAge());
+            userEntity.setGender(userRequest.getGender());
+            userEntity.setAddress(userRequest.getAddress());
+            userEntity.setPhone(userRequest.getPhone());
+            userEntity.setLastName(userRequest.getLastName());
+            userEntity.setFullName(userRequest.getFullName());
+            if(userRequest.getCompanyId() > 0){
+                Optional<CompanyEntity> companyEntity = companyService.getCompanyById(userRequest.getCompanyId());
+                userRequest.setCompanyId(companyEntity.map(CompanyEntity::getId).orElse(0L));
+            }
+
+            return userRepository.save(userEntity);
         }
         return null;
     }
@@ -99,7 +111,10 @@ public class UserService implements UserServiceImp {
                 .firstName(userEntity.getFirstName())
                 .lastName(userEntity.getLastName())
                 .gender(userEntity.getGender())
-                .phone(userEntity.getPhone()).build();
+                .phone(userEntity.getPhone())
+                .companyEntity(userEntity.getCompanyEntity())
+                .build();
+
     };
 
     @Override

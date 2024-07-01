@@ -41,6 +41,15 @@ public class UserController {
         return new ResponseEntity<>(userResponses,HttpStatus.OK);
 
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable long id) throws IdValidationException{
+        UserEntity userEntity = userService.findUserById(id);
+        if(userEntity == null){
+            throw new IdValidationException("User không tồn tại");
+        }
+        UserResponse userResponse = userService.convertUserResponse(userEntity);
+        return ResponseEntity.ok().body(userResponse);
+    }
     @PostMapping("")
     public ResponseEntity<?> addUser(@Valid @RequestBody UserRequest userRequest) throws UsernameExistance {
         boolean isExistUsername = userService.CheckUsernameIsExist(userRequest.getUserName());
@@ -48,11 +57,12 @@ public class UserController {
             throw new UsernameExistance("Username tồn tại");
         }
       UserEntity userEntity = userService.addUser(userRequest);
+      UserResponse userResponse = userService.convertUserResponse(userEntity);
       MetaLoad metaLoad = new MetaLoad();
       BaseLoad baseLoad = new BaseLoad();
       baseLoad.setMessage("Đăng ký thành công");
       baseLoad.setMetaLoad(metaLoad);
-      baseLoad.setData(userEntity);
+      baseLoad.setData(userResponse);
       return ResponseEntity.status(HttpStatus.CREATED).body(baseLoad);
     }
     @PutMapping("")
@@ -66,7 +76,7 @@ public class UserController {
         BaseLoad baseLoad = new BaseLoad();
         baseLoad.setMetaLoad(metaLoad);
         baseLoad.setMessage("Update thành công");
-        baseLoad.setData(userResponse);
+        baseLoad.setData(userEntity);
         return ResponseEntity.status(HttpStatus.OK).body(baseLoad);
     }
     @DeleteMapping("/{id}")
